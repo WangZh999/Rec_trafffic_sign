@@ -1,0 +1,49 @@
+#include"predict.h"
+#include"getFeature.h"
+using namespace cv;
+
+ANN_Wz::ANN_Wz()
+{
+	/*载入训练好的神经网络参数*/
+	_Ann = ml::ANN_MLP::load("../param/nn_param.xml");
+	_feature_mat.convertTo(_feature_mat, CV_32F);	//用于存放图片特征向量
+	_result = (Mat_<float>(1, CLASS_NUM));	//用于存放预测结果
+}
+
+
+int ANN_Wz::predict(cv::Mat img)
+{
+	float maxVal = -2;
+	int result = 0;
+	_feature_mat = getFeature(img);
+	_Ann->predict(_feature_mat, _result);	//根据特征求取结果
+	for (int j = 0; j < CLASS_NUM; j++) {	//最大隶属度原则
+		float val = _result.at<float>(j);
+		if (val > maxVal) {
+			maxVal = val;
+			result = j;
+		}
+	}
+
+	return result;
+
+	/*if (maxVal < 0.5)
+	{
+		return -1;
+	}
+	else
+	{
+		return result;
+	}*/
+}
+
+
+ANN_Wz::~ANN_Wz()
+{
+}
+
+
+void test()
+{
+	cout << "test   test    test" << endl;
+}

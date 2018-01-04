@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="computor_geometry.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="contours.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="image_proc_utils.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="matrix_proc.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="median.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mem.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="osd.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="rgb_ycbcr.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="util.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="base_type.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="computor_geometry.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="contours.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="image_proc_utils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="matrix_proc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="median.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="osd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="rgb_ycbcr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="sthz16.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
