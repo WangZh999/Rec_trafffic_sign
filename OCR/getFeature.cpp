@@ -6,13 +6,13 @@ Mat element = getStructuringElement(MORPH_RECT,
 
 cv::Mat getFeature(Mat raw_img)
 {	
-	//模糊，滤波
+	//模???????
 	//blur(raw_img, raw_img, Size(3, 3));
 
-	//阈值分割
+	//?值?指?
 	//threshold(raw_img, raw_img, 120, 255, CV_THRESH_OTSU);
 
-	//寻找最小外接矩，得到感兴趣区域
+	//寻??小??泳兀??玫???????
 	Rect _rect = getMinRect2(raw_img);
 	Mat roi_img = raw_img(_rect);
 
@@ -21,16 +21,32 @@ cv::Mat getFeature(Mat raw_img)
 	//waitKey();
 	//destroyWindow("roi");
 
-	//将图片缩放只指定大小
+	//??图片????指?????
 	Mat lowData;
 	resize(roi_img, lowData, Size(IMAGE_SIZE, IMAGE_SIZE));
 
 	imshow("std_size", lowData);
 
-	//直方图特征
+	//直??图??
 	Mat hist = getHistogram(lowData);
 
-	return hist;
+	resize(lowData, lowData, Size(4, 4));
+
+	Mat _feature(1, 2 * IMAGE_SIZE + 16, CV_32F);
+
+	for (int i = 0; i < (2 * IMAGE_SIZE); i++)
+	{
+		_feature.at<float>(i) = hist.at<float>(i);
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		unsigned char *ptr = lowData.ptr(i);
+		for (int j = 0; j < 4; j++)
+		{
+			_feature.at<float>(2 * IMAGE_SIZE + i * 4 + j) = (float)ptr[j];
+		}
+	}
+	return _feature;
 }
 
 cv::Rect getMinRect(Mat &img)
@@ -88,7 +104,7 @@ cv::Rect getMinRect2(Mat &img)
 
 	Mat hist = getHistogram2(img);
 
-	//由左至右第一个大于阈值的坐标作为左边界
+	//????????????????????为??呓?
 	for (int i = 0; i < cols; i++)
 	{
 		_value = hist.at<float>(i);
@@ -101,7 +117,7 @@ cv::Rect getMinRect2(Mat &img)
 		}
 	}
 
-	//由右至左第一个大于阈值的坐标作为右边界
+	//????????????????????为??呓?
 	for (int i = cols - 1; i >= 0; i--)
 	{
 		_value = hist.at<float>(i);
@@ -114,7 +130,7 @@ cv::Rect getMinRect2(Mat &img)
 		}
 	}
 
-	//由上至下第一个大于阈值的坐标作为上边界
+	//????????????????????为??呓?
 	for (int i = cols; i < rows + cols; i++)
 	{
 		_value = hist.at<float>(i);
@@ -127,7 +143,7 @@ cv::Rect getMinRect2(Mat &img)
 		}
 	}
 
-	//由下至上第一个大于阈值的坐标作为下边界
+	//????????????????????为??呓?
 	for (int i = rows + cols - 1; i >= cols; i--)
 	{
 		_value = hist.at<float>(i);
@@ -155,8 +171,8 @@ cv::Rect getMinRect2(Mat &img)
 
 
 /***************************
-获取水平、垂直方向的直方图
-return：水平+垂直  直方图
+???水平????直????????图
+return??水平+??直  直??图
 **************************/
 cv::Mat getHistogram(Mat &img)
 {
@@ -190,8 +206,8 @@ cv::Mat getHistogram(Mat &img)
 
 
 /***************************
-获取水平、垂直方向的直方图(非固定大小图片，最大1000*1000）
-return：水平+垂直  直方图
+???水平????直????????图(?枪潭????图片?????000*1000??
+return??水平+??直  直??图
 **************************/
 cv::Mat getHistogram2(Mat &img)
 {
