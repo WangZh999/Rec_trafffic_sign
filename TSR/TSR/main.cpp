@@ -45,11 +45,13 @@ int main()
 
 
 	Mat yuvimg;
-	Mat img = imread("test.jpg");
-	//resize(img, img, Size(100, 100));
+	Mat img = imread("1.jpg");
+	resize(img, img, Size(500, 500));
+	imshow("img", img);
+	waitKey();
 	cvtColor(img, yuvimg, CV_BGRA2YUV_I420);
 	void * phandle = TSR_DET_Create(img.cols, img.rows);
-	TSR_DET_run(phandle, yuvimg.data, img.cols, img.rows);
+	TSR_DET_run2(phandle, yuvimg.data, img.cols, img.rows);
 	waitKey();
 
 	//ANN_Wz _ann = ANN_Wz();

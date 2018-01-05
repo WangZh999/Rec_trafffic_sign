@@ -286,6 +286,7 @@ void *TSR_DET_Create(int image_w, int image_h)
 		return NULL;
 	}
 	memset(phandle, 0, sizeof(TSR_HANDLE));
+
 	phandle->binary_image = (PBYTE)malloc(image_w*image_h);
 	if (phandle->binary_image == NULL)
 	{
@@ -293,6 +294,7 @@ void *TSR_DET_Create(int image_w, int image_h)
 		return NULL;
 	}
 	memset(phandle->binary_image, 0, image_w*image_h);
+
 	phandle->temp_image = (PBYTE)malloc(image_w*image_h);
 	if (phandle->temp_image == NULL)
 	{
@@ -494,13 +496,13 @@ int TSR_DET_run(void *phandle, PBYTE yuv420, int image_w, int image_h)
 		if (sub_rect.width *sub_rect.height >= 200 && sub_rect.width *sub_rect.height <= 100000\
 			&& sub_rect.width/(float)sub_rect.height >= 0.3 && sub_rect.width/(float)sub_rect.height <= 3.3)
 		{
+
 			ptTSR_HANDLE->rect_list[ptTSR_HANDLE->rect_num] = sub_rect;
 			ptTSR_HANDLE->rect_num++;
-
 		}
 	}
 
-	
+
 	/***************************************
 	for (i = 0; i < ptTSR_HANDLE->rect_num; i++)
 	{
@@ -596,6 +598,147 @@ int TSR_DET_run(void *phandle, PBYTE yuv420, int image_w, int image_h)
 				//***************************************************************
 
 				MerageRectYchannel(temp, DST_WID, DST_HEI, sub_rect.x, sub_rect.y, sub_rect.width, sub_rect.height, 255);
+				rect_num++;
+			}
+			else
+			{
+				//MerageRectYchannel(temp, DST_WID, DST_HEI, sub_rect.x, sub_rect.y, sub_rect.width, sub_rect.height, 128);  //****************
+
+			}
+		}
+		//namedWindow("mask", WINDOW_NORMAL);
+		//ShowImageOpencv(temp, DST_WID, DST_HEI, 8, 1, "mask");	  waitKey(0);//***********************
+		DestroySeq(ptSeq, &storage);
+		if (rect_num > 0)
+		{
+			MerageRect(yuv420, image_w, image_h, rect.x, rect.y, rect.width, rect.height, 0, 255, 0);
+		}
+		//Save_Image(binary, DST_WID, DST_HEI, NULL);
+	}
+	return 0;
+}
+
+
+
+int TSR_DET_run2(void *phandle, PBYTE yuv420, int image_w, int image_h)
+{
+	ANN_Wz _ann = ANN_Wz();
+	//test();
+
+	TSR_HANDLE *ptTSR_HANDLE = NULL;
+	CV_SEQ *ptSeq = NULL;
+	CV_SEQ *ptTmp = NULL;
+	CV_RECT rect;
+	PBYTE  binary, temp, buffer;
+	int i = 0;
+	MEMORY_BUFFER storage;
+
+	CHECK_ERROR((phandle == NULL), -1);
+
+	ptTSR_HANDLE = (TSR_HANDLE *)phandle;
+
+	//rect.x = 8;
+	//rect.y = 8;
+	//rect.width = image_w-8;
+	//rect.height = image_h/2;
+
+
+	//*****************************************
+	rect.x = 8;
+	rect.y = 8;
+	rect.width = image_w - 16;
+	rect.height = image_h - 16;
+	//*****************************************
+
+	binary = ptTSR_HANDLE->binary_image;
+	temp = ptTSR_HANDLE->temp_image;
+	buffer = ptTSR_HANDLE->memory;
+	memset(temp, 0, image_w*image_h);
+	memset(binary, 0, image_w*image_h);
+
+	ConvertHsvMask(ptTSR_HANDLE->bitmap, binary, yuv420, image_w, image_h, &rect);
+	
+	image_threshold(binary, temp, 1, 255, image_w, image_h, NULL);
+	
+	//ShowImageOpencv(temp, image_w, image_h, 8, 1, "mask");	//***********************
+
+	storage.start_pos = ptTSR_HANDLE->memory;
+	storage.cur_pos = ptTSR_HANDLE->memory;
+	storage.end_pos = ptTSR_HANDLE->memory + ptTSR_HANDLE->mem_len;
+
+	ptTSR_HANDLE->rect_num = 0;
+	ptSeq = FindContours(binary, image_w, image_h, CONTOURS_LIST, &storage);
+	for (ptTmp = ptSeq; ptTmp != NULL; ptTmp = ptTmp->h_next)
+	{
+		CV_RECT sub_rect = BoundingRect(ptTmp);
+		if (sub_rect.width *sub_rect.height >= 10000 && sub_rect.width *sub_rect.height <= 250000\
+			&& sub_rect.width / (float)sub_rect.height >= 0.3 && sub_rect.width / (float)sub_rect.height <= 3.3)
+		{
+
+			ptTSR_HANDLE->rect_list[ptTSR_HANDLE->rect_num] = sub_rect;
+			ptTSR_HANDLE->rect_num++;
+		}
+	}
+
+
+	DestroySeq(ptSeq, &storage);
+
+	for (i = 0; i < ptTSR_HANDLE->rect_num; i++)
+	{
+		BYTE *buffer = temp + DST_HEI*DST_WID;
+		CV_RECT rect = ptTSR_HANDLE->rect_list[i];
+		int rect_num = 0;
+	
+		image_resize_bilinear_roi(yuv420, temp, image_w, image_h, DST_WID, DST_HEI, &rect, (short *)buffer);
+		//image_binary_otsu(temp, binary, DST_WID, DST_HEI);
+		jmAdaptiveThreshold(temp, binary, buffer, DST_WID,
+			DST_HEI, 0, 21, 3, THRESH_BINARY_INV, 1);
+		image_threshold(binary, temp, 1, 255, DST_WID, DST_HEI, NULL);
+
+		//*******************************************
+		////temp:Ã¿¸öÇøÓò
+		namedWindow("temp", WINDOW_NORMAL);
+		ShowImageOpencv(temp, DST_WID, DST_HEI, 8, 1, "temp");
+		waitKey();
+		destroyAllWindows();
+		//*******************************************
+
+		ptSeq = FindContours(binary, DST_WID, DST_HEI, CONTOURS_LIST, &storage);
+		for (ptTmp = ptSeq; ptTmp != NULL; ptTmp = ptTmp->h_next)
+		{
+			CV_RECT sub_rect = BoundingRect(ptTmp);
+
+			if ((sub_rect.height >= DST_HEI / 2) && (sub_rect.width >= DST_WID / 6) && (sub_rect.width <= DST_WID / 2) && \
+				(sub_rect.width / (float)sub_rect.height >= 0.15) && (sub_rect.height / (float)sub_rect.width >= 0.5))  //****************		
+				//if (sub_rect.height >= DST_HEI/3 && sub_rect.width/(float)sub_rect.height >= 0.05 && sub_rect.width/(float)sub_rect.height <= 0.8)					
+			{
+
+
+				//***************************************************************
+				Mat _temp_img = Mat(sub_rect.height, sub_rect.width, CV_8UC1);
+				for (int i = 0; i < _temp_img.rows; i++)
+				{
+					unsigned char *ptr = _temp_img.ptr(i);
+					for (int j = 0; j < _temp_img.cols; j++)
+					{
+						ptr[j] = temp[(sub_rect.y + i)*DST_WID + sub_rect.x + j];
+					}
+				}
+
+				/*Mat element = getStructuringElement(MORPH_RECT,
+				Size(5,5),
+				Point(2, 2));
+				erode(_temp_img, _temp_img, element);*/
+
+				namedWindow("temp2", WINDOW_NORMAL);
+				imshow("temp2", _temp_img);
+				int __V = _ann.predict(_temp_img);
+				cout << "value:  " << __V << endl;
+				waitKey();
+				destroyAllWindows();
+				//***************************************************************
+
+				//MerageRectYchannel(temp, DST_WID, DST_HEI, sub_rect.x, sub_rect.y, sub_rect.width, sub_rect.height, 255);
 				rect_num++;
 			}
 			else

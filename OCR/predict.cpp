@@ -25,7 +25,7 @@ int ANN_Wz::predict(cv::Mat img)
 		}
 	}
 	
-	if (maxVal < 0.85)
+	if (maxVal < TH_MEMBERSHIP)
 	{
 		return -1;
 	}
