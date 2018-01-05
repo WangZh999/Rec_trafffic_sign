@@ -21,10 +21,10 @@
     <ClCompile Include="getFeature.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="train.cpp">
+    <ClCompile Include="predict.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="predict.cpp">
+    <ClCompile Include="train.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,10 +35,10 @@
     <ClInclude Include="getFeature.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="train.h">
+    <ClInclude Include="predict.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="predict.h">
+    <ClInclude Include="train.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

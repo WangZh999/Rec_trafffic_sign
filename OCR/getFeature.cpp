@@ -6,28 +6,21 @@ Mat element = getStructuringElement(MORPH_RECT,
 
 cv::Mat getFeature(Mat raw_img)
 {	
-	//模???????
-	//blur(raw_img, raw_img, Size(3, 3));
+	//模糊，滤波
+	blur(raw_img, raw_img, Size(3, 3));
 
-	//?值?指?
-	//threshold(raw_img, raw_img, 120, 255, CV_THRESH_OTSU);
+	//阈值分割
+	threshold(raw_img, raw_img, 120, 255, CV_THRESH_OTSU);
 
-	//寻??小??泳兀??玫???????
+	//寻找最小外接矩，得到感兴趣区域
 	Rect _rect = getMinRect2(raw_img);
 	Mat roi_img = raw_img(_rect);
 
-	namedWindow("roi", WINDOW_NORMAL);
-	imshow("roi", roi_img);
-	//waitKey();
-	//destroyWindow("roi");
-
-	//??图片????指?????
+	//将图片缩放只指定大小
 	Mat lowData;
 	resize(roi_img, lowData, Size(IMAGE_SIZE, IMAGE_SIZE));
 
-	imshow("std_size", lowData);
-
-	//直??图??
+	//直方图特征
 	Mat hist = getHistogram(lowData);
 
 	resize(lowData, lowData, Size(4, 4));
@@ -104,7 +97,7 @@ cv::Rect getMinRect2(Mat &img)
 
 	Mat hist = getHistogram2(img);
 
-	//????????????????????为??呓?
+	//由左至右第一个大于阈值的坐标作为左边界
 	for (int i = 0; i < cols; i++)
 	{
 		_value = hist.at<float>(i);
@@ -117,7 +110,7 @@ cv::Rect getMinRect2(Mat &img)
 		}
 	}
 
-	//????????????????????为??呓?
+	//由右至左第一个大于阈值的坐标作为右边界
 	for (int i = cols - 1; i >= 0; i--)
 	{
 		_value = hist.at<float>(i);
@@ -130,7 +123,7 @@ cv::Rect getMinRect2(Mat &img)
 		}
 	}
 
-	//????????????????????为??呓?
+	//由上至下第一个大于阈值的坐标作为上边界
 	for (int i = cols; i < rows + cols; i++)
 	{
 		_value = hist.at<float>(i);
@@ -143,7 +136,7 @@ cv::Rect getMinRect2(Mat &img)
 		}
 	}
 
-	//????????????????????为??呓?
+	//由下至上第一个大于阈值的坐标作为下边界
 	for (int i = rows + cols - 1; i >= cols; i--)
 	{
 		_value = hist.at<float>(i);
@@ -171,8 +164,8 @@ cv::Rect getMinRect2(Mat &img)
 
 
 /***************************
-???水平????直????????图
-return??水平+??直  直??图
+获取水平、垂直方向的直方图
+return：水平+垂直  直方图
 **************************/
 cv::Mat getHistogram(Mat &img)
 {
@@ -206,8 +199,8 @@ cv::Mat getHistogram(Mat &img)
 
 
 /***************************
-???水平????直????????图(?枪潭????图片?????000*1000??
-return??水平+??直  直??图
+获取水平、垂直方向的直方图(非固定大小图片，最大1000*1000）
+return：水平+垂直  直方图
 **************************/
 cv::Mat getHistogram2(Mat &img)
 {
