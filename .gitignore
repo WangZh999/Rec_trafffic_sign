@@ -1,8 +1,13 @@
+/TSR/.vs/
 /TSR/x64/
 /TSR/Debug/
 /TSR/TSR/x64/
-/TSR/.vs/
+/TSR/TSR/Debug/
+
 /OCR/x64/
+/OCR/Debug/
+/OCR/Release/
+
 /util/x64/
 /util/Debug/
 /util/Release/
