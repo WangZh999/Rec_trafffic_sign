@@ -719,7 +719,7 @@ int TSR_DET_run2(void *phandle, PBYTE yuv420, int image_w, int image_h)
 		{
 			CV_RECT sub_rect = BoundingRect(ptTmp);
 			//if(1)
-			if ((sub_rect.height >= DST_HEI / 4) && (sub_rect.width >= DST_WID / 10) && (sub_rect.width <= DST_WID / 1.1) && \
+			if ((sub_rect.height >= DST_HEI / 4) && (sub_rect.width >= DST_WID / 10) && (sub_rect.width <= DST_WID / 1.5) && \
 				(sub_rect.width / (float)sub_rect.height >= 0.1) && (sub_rect.height / (float)sub_rect.width >= 0.2))  //****************		
 				//if (sub_rect.height >= DST_HEI/3 && sub_rect.width/(float)sub_rect.height >= 0.05 && sub_rect.width/(float)sub_rect.height <= 0.8)					
 			{
@@ -792,6 +792,14 @@ unsigned long drawContours_Wz(Mat & img, CV_SEQ *ptSeq, Mat src)
 unsigned long grow_Wz(Mat & img, Mat src, int seed_y, int seed_x)
 {
 	unsigned long length = 0;
+	bool _up, _down, _left, _right;
+	_up = _down = _left = _right = false;
+
+	//*********************************
+	//∞À¡⁄”Ú
+	bool _up_right, _up_left, _down_right, _down_left;
+	_up_right = _up_left = _down_right = _down_left = false;
+	//*********************************
 	
 	if ((seed_y + 1) < img.rows) {
 		if ((255 == src.at<unsigned char>(seed_y + 1, seed_x)) \
@@ -799,7 +807,8 @@ unsigned long grow_Wz(Mat & img, Mat src, int seed_y, int seed_x)
 		{
 			img.at<unsigned char>(seed_y + 1, seed_x) = 255;
 			length++;
-			length += grow_Wz(img, src, seed_y + 1, seed_x);
+			_up = true;
+			//length += grow_Wz(img, src, seed_y + 1, seed_x);
 		}
 	}
 
@@ -809,7 +818,8 @@ unsigned long grow_Wz(Mat & img, Mat src, int seed_y, int seed_x)
 		{
 			img.at<unsigned char>(seed_y - 1, seed_x) = 255;
 			length++;
-			length += grow_Wz(img, src, seed_y - 1, seed_x);
+			_down = false;
+			//length += grow_Wz(img, src, seed_y - 1, seed_x);
 		}
 	}
 
@@ -819,7 +829,8 @@ unsigned long grow_Wz(Mat & img, Mat src, int seed_y, int seed_x)
 		{
 			img.at<unsigned char>(seed_y, seed_x + 1) = 255;
 			length++;
-			length += grow_Wz(img, src, seed_y, seed_x + 1);
+			_right = true;
+			//length += grow_Wz(img, src, seed_y, seed_x + 1);
 		}
 	}
 
@@ -829,14 +840,12 @@ unsigned long grow_Wz(Mat & img, Mat src, int seed_y, int seed_x)
 		{
 			img.at<unsigned char>(seed_y, seed_x - 1) = 255;
 			length++;
-			length += grow_Wz(img, src, seed_y, seed_x - 1);
+			_left = true;
+			//length += grow_Wz(img, src, seed_y, seed_x - 1);
 		}
 	}
 
-
-
-
-
+	
 	//*****************************************
 	//∞À¡⁄”Ú
 	if (((seed_y + 1) < img.rows) && (((seed_x + 1) < img.cols))) {
@@ -845,17 +854,8 @@ unsigned long grow_Wz(Mat & img, Mat src, int seed_y, int seed_x)
 		{
 			img.at<unsigned char>(seed_y + 1, seed_x + 1) = 255;
 			length++;
-			length += grow_Wz(img, src, seed_y + 1, seed_x + 1);
-		}
-	}
-
-	if (((seed_y - 1) >= 0) && (((seed_x + 1) < img.cols))) {
-		if ((255 == src.at<unsigned char>(seed_y - 1, seed_x + 1)) \
-			&& (0 == img.at<unsigned char>(seed_y - 1, seed_x + 1)))
-		{
-			img.at<unsigned char>(seed_y - 1, seed_x + 1) = 255;
-			length++;
-			length += grow_Wz(img, src, seed_y - 1, seed_x + 1);
+			_up_right = true;
+			//length += grow_Wz(img, src, seed_y + 1, seed_x + 1);
 		}
 	}
 
@@ -865,7 +865,19 @@ unsigned long grow_Wz(Mat & img, Mat src, int seed_y, int seed_x)
 		{
 			img.at<unsigned char>(seed_y + 1, seed_x - 1) = 255;
 			length++;
-			length += grow_Wz(img, src, seed_y + 1, seed_x - 1);
+			_up_left = true;
+			//length += grow_Wz(img, src, seed_y + 1, seed_x - 1);
+		}
+	}
+
+	if (((seed_y - 1) >= 0) && (((seed_x + 1) < img.cols))) {
+		if ((255 == src.at<unsigned char>(seed_y - 1, seed_x + 1)) \
+			&& (0 == img.at<unsigned char>(seed_y - 1, seed_x + 1)))
+		{
+			img.at<unsigned char>(seed_y - 1, seed_x + 1) = 255;
+			length++;
+			_down_right = true;
+			//length += grow_Wz(img, src, seed_y - 1, seed_x + 1);
 		}
 	}
 
@@ -875,9 +887,45 @@ unsigned long grow_Wz(Mat & img, Mat src, int seed_y, int seed_x)
 		{
 			img.at<unsigned char>(seed_y - 1, seed_x - 1) = 255;
 			length++;
-			length += grow_Wz(img, src, seed_y - 1, seed_x - 1);
+			_down_left = true;
+			//length += grow_Wz(img, src, seed_y - 1, seed_x - 1);
 		}
 	}
-	//******************************
+	//******************************/
+
+
+
+
+	if (_up) {
+		length += grow_Wz(img, src, seed_y + 1, seed_x);
+	}
+	if (_down) {
+		length += grow_Wz(img, src, seed_y - 1, seed_x);
+	}
+	if (_right) {
+		length += grow_Wz(img, src, seed_y, seed_x + 1);
+	}
+	if (_left) {
+		length += grow_Wz(img, src, seed_y, seed_x - 1);
+	}
+
+
+
+	//*****************************************
+	//∞À¡⁄”Ú
+	if (_up_right) {
+		length += grow_Wz(img, src, seed_y + 1, seed_x + 1);
+	}
+	if (_up_left) {
+		length += grow_Wz(img, src, seed_y + 1, seed_x - 1);
+	}
+	if (_down_right) {
+		length += grow_Wz(img, src, seed_y - 1, seed_x + 1);
+	}
+	if (_down_left) {
+		length += grow_Wz(img, src, seed_y - 1, seed_x - 1);
+	}
+	//******************************/
+
 	return length;
 }

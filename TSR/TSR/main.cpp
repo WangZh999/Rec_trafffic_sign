@@ -45,7 +45,7 @@ int main()
 
 
 	Mat yuvimg;
-	Mat img = imread("5.jpg");
+	Mat img = imread("1.jpg");
 	resize(img, img, Size(500, 500));
 	//bilateralFilter(img, img, 5, 100, 5);
 	blur(img, img, Size(25,25));
