@@ -5,7 +5,7 @@ using namespace cv;
 ANN_Wz::ANN_Wz()
 {
 	/*载入训练好的神经网络参数*/
-	_Ann = ml::ANN_MLP::load("E:\\w.xml");
+	_Ann = ml::ANN_MLP::load("../../OCR/param.xml");
 	_feature_mat.convertTo(_feature_mat, CV_32F);	//用于存放图片特征向量
 	_result = (Mat_<float>(1, CLASS_NUM));	//用于存放预测结果
 }

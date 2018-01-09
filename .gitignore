@@ -14,6 +14,11 @@
 /util/Backup/
 /param/
 
+/mnist/x64/
+/mnist/mnist/x64/
+
+/OCR_train/x64/
+
 
 # Prerequisites
 *.d
