@@ -16,6 +16,9 @@
 
 /mnist/x64/
 /mnist/mnist/x64/
+/mnist/mnist/mnist/
+/mnist/mnist/mnist_test/
+/mnist/mnist/mnist_train/
 
 /OCR_train/x64/
 
