@@ -3,7 +3,7 @@
 #define	 GETFEATURE_H
 
 #define IMAGE_SIZE 16
-#define _THRESHOLD 25
+#define _THRESHOLD 35
 
 #include<opencv.hpp>
 

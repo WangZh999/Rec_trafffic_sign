@@ -292,10 +292,11 @@ CV_SEQ *FindContours(BYTE *pu8Img, int image_w, int image_h, int mode, MEMORY_BU
 	for (y = 1; y < image_h-1; y++, img1 += image_w)
 	{
 		img1[0] = 0;
-		img1[image_w-1] = 0;
+		img1[image_w - 1] = 0;
 	}
-	img1 = img+image_w;
+
 	prev = img1[x-1];
+	img1 = img + image_w;
 	for(y = 1; y < image_h-1; y++,  img1 += image_w)
 	{
 		int p = 0;

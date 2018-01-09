@@ -32,10 +32,10 @@ int main()
 	//	if (!video.read(frame))
 	//		break;
 
+
 	//	cv::imshow("Extracted Frame", frame);
 	//	cvtColor(frame, yuvimg, CV_BGRA2YUV_I420);
 	//	void * phandle = TSR_DET_Create(frame.cols, frame.rows);
-
 	//	TSR_DET_run(phandle, yuvimg.data, frame.cols, frame.rows);
 	//	// ÒýÈëÑÓ³Ù
 	//	//if (cv::waitKey(delay) >= 0)
@@ -45,8 +45,11 @@ int main()
 
 
 	Mat yuvimg;
-	Mat img = imread("1.jpg");
+	Mat img = imread("5.jpg");
 	resize(img, img, Size(500, 500));
+	//bilateralFilter(img, img, 5, 100, 5);
+	blur(img, img, Size(25,25));
+	medianBlur(img, img, 9);
 	imshow("img", img);
 	waitKey();
 	cvtColor(img, yuvimg, CV_BGRA2YUV_I420);

@@ -23,10 +23,11 @@ using namespace std;
 
 //单帧图像中最多检测到的矩形区域数目
 #ifndef MAX_RECT_NUM
-#define MAX_RECT_NUM	 200
+#define MAX_RECT_NUM	 20
 #endif
 
-
+unsigned long drawContours_Wz(Mat & img, CV_SEQ *ptSeq, Mat src);
+unsigned long grow_Wz(Mat & img, Mat src, int seed_y, int seed_x);
 
 typedef struct _TSR_HANDLE_
 {
@@ -672,7 +673,7 @@ int TSR_DET_run2(void *phandle, PBYTE yuv420, int image_w, int image_h)
 	{
 		CV_RECT sub_rect = BoundingRect(ptTmp);
 		if (sub_rect.width *sub_rect.height >= 10000 && sub_rect.width *sub_rect.height <= 250000\
-			&& sub_rect.width / (float)sub_rect.height >= 0.3 && sub_rect.width / (float)sub_rect.height <= 3.3)
+			&& sub_rect.width / (float)sub_rect.height >= 0.5 && sub_rect.width / (float)sub_rect.height <= 2)
 		{
 
 			ptTSR_HANDLE->rect_list[ptTSR_HANDLE->rect_num] = sub_rect;
@@ -699,53 +700,62 @@ int TSR_DET_run2(void *phandle, PBYTE yuv420, int image_w, int image_h)
 		////temp:每个区域
 		namedWindow("temp", WINDOW_NORMAL);
 		ShowImageOpencv(temp, DST_WID, DST_HEI, 8, 1, "temp");
-		waitKey();
-		destroyAllWindows();
+
+		Mat _temp_src = Mat(DST_HEI, DST_WID, CV_8UC1);
+		for (int i = 0; i < _temp_src.rows; i++)
+		{
+			unsigned char *ptr = _temp_src.ptr(i);
+			for (int j = 0; j < _temp_src.cols; j++)
+			{
+				ptr[j] = temp[DST_WID*i + j];
+			}
+		}
+		//waitKey();
+		//destroyAllWindows();
 		//*******************************************
 
 		ptSeq = FindContours(binary, DST_WID, DST_HEI, CONTOURS_LIST, &storage);
 		for (ptTmp = ptSeq; ptTmp != NULL; ptTmp = ptTmp->h_next)
 		{
 			CV_RECT sub_rect = BoundingRect(ptTmp);
-
-			if ((sub_rect.height >= DST_HEI / 2) && (sub_rect.width >= DST_WID / 6) && (sub_rect.width <= DST_WID / 2) && \
-				(sub_rect.width / (float)sub_rect.height >= 0.15) && (sub_rect.height / (float)sub_rect.width >= 0.5))  //****************		
+			//if(1)
+			if ((sub_rect.height >= DST_HEI / 4) && (sub_rect.width >= DST_WID / 10) && (sub_rect.width <= DST_WID / 1.1) && \
+				(sub_rect.width / (float)sub_rect.height >= 0.1) && (sub_rect.height / (float)sub_rect.width >= 0.2))  //****************		
 				//if (sub_rect.height >= DST_HEI/3 && sub_rect.width/(float)sub_rect.height >= 0.05 && sub_rect.width/(float)sub_rect.height <= 0.8)					
 			{
 
 
 				//***************************************************************
-				Mat _temp_img = Mat(sub_rect.height, sub_rect.width, CV_8UC1);
+				
+				Mat _temp_img = Mat(DST_HEI, DST_WID, CV_8UC1);
 				for (int i = 0; i < _temp_img.rows; i++)
 				{
-					unsigned char *ptr = _temp_img.ptr(i);
+					unsigned char * ptr = _temp_img.ptr(i);
 					for (int j = 0; j < _temp_img.cols; j++)
 					{
-						ptr[j] = temp[(sub_rect.y + i)*DST_WID + sub_rect.x + j];
+						ptr[j] = 0;
 					}
 				}
-
-				/*Mat element = getStructuringElement(MORPH_RECT,
-				Size(5,5),
-				Point(2, 2));
-				erode(_temp_img, _temp_img, element);*/
-
+								
+				cout << "length : " << drawContours_Wz(_temp_img, ptTmp, _temp_src) << endl;
+				
 				namedWindow("temp2", WINDOW_NORMAL);
 				imshow("temp2", _temp_img);
 				int __V = _ann.predict(_temp_img);
 				cout << "value:  " << __V << endl;
 				waitKey();
-				destroyAllWindows();
+				destroyWindow("temp2");
+				//destroyAllWindows();
 				//***************************************************************
 
 				//MerageRectYchannel(temp, DST_WID, DST_HEI, sub_rect.x, sub_rect.y, sub_rect.width, sub_rect.height, 255);
 				rect_num++;
 			}
-			else
-			{
-				//MerageRectYchannel(temp, DST_WID, DST_HEI, sub_rect.x, sub_rect.y, sub_rect.width, sub_rect.height, 128);  //****************
+			//else
+			//{
+			//	//MerageRectYchannel(temp, DST_WID, DST_HEI, sub_rect.x, sub_rect.y, sub_rect.width, sub_rect.height, 128);  //****************
 
-			}
+			//}
 		}
 		//namedWindow("mask", WINDOW_NORMAL);
 		//ShowImageOpencv(temp, DST_WID, DST_HEI, 8, 1, "mask");	  waitKey(0);//***********************
@@ -757,4 +767,117 @@ int TSR_DET_run2(void *phandle, PBYTE yuv420, int image_w, int image_h)
 		//Save_Image(binary, DST_WID, DST_HEI, NULL);
 	}
 	return 0;
+}
+
+
+
+unsigned long drawContours_Wz(Mat & img, CV_SEQ *ptSeq, Mat src)
+{
+	unsigned long length = 0;
+
+	LIST *ptCurNode = NULL;
+	CV_POINT *pt = NULL;
+
+	ptCurNode = ptSeq->list.ptHead;
+	while (ptCurNode != NULL)
+	{
+		pt = (CV_POINT *)ptCurNode->ptData;
+		img.at<unsigned char>(pt->y, pt->x) = 255;
+		length += grow_Wz(img, src, pt->y, pt->x);
+		ptCurNode = ptCurNode->ptNext;
+	}
+	return length;
+}
+
+unsigned long grow_Wz(Mat & img, Mat src, int seed_y, int seed_x)
+{
+	unsigned long length = 0;
+	
+	if ((seed_y + 1) < img.rows) {
+		if ((255 == src.at<unsigned char>(seed_y + 1, seed_x)) \
+			&& (0 == img.at<unsigned char>(seed_y + 1, seed_x)))
+		{
+			img.at<unsigned char>(seed_y + 1, seed_x) = 255;
+			length++;
+			length += grow_Wz(img, src, seed_y + 1, seed_x);
+		}
+	}
+
+	if ((seed_y - 1) >= 0) {
+		if ((255 == src.at<unsigned char>(seed_y - 1, seed_x)) \
+			&& (0 == img.at<unsigned char>(seed_y - 1, seed_x)))
+		{
+			img.at<unsigned char>(seed_y - 1, seed_x) = 255;
+			length++;
+			length += grow_Wz(img, src, seed_y - 1, seed_x);
+		}
+	}
+
+	if ((seed_x + 1) < img.cols) {
+		if ((255 == src.at<unsigned char>(seed_y, seed_x + 1)) \
+			&& (0 == img.at<unsigned char>(seed_y, seed_x + 1)))
+		{
+			img.at<unsigned char>(seed_y, seed_x + 1) = 255;
+			length++;
+			length += grow_Wz(img, src, seed_y, seed_x + 1);
+		}
+	}
+
+	if ((seed_x - 1) >= 0) {
+		if ((255 == src.at<unsigned char>(seed_y, seed_x - 1)) \
+			&& (0 == img.at<unsigned char>(seed_y, seed_x - 1)))
+		{
+			img.at<unsigned char>(seed_y, seed_x - 1) = 255;
+			length++;
+			length += grow_Wz(img, src, seed_y, seed_x - 1);
+		}
+	}
+
+
+
+
+
+	//*****************************************
+	//八邻域
+	if (((seed_y + 1) < img.rows) && (((seed_x + 1) < img.cols))) {
+		if ((255 == src.at<unsigned char>(seed_y + 1, seed_x + 1)) \
+			&& (0 == img.at<unsigned char>(seed_y + 1, seed_x + 1)))
+		{
+			img.at<unsigned char>(seed_y + 1, seed_x + 1) = 255;
+			length++;
+			length += grow_Wz(img, src, seed_y + 1, seed_x + 1);
+		}
+	}
+
+	if (((seed_y - 1) >= 0) && (((seed_x + 1) < img.cols))) {
+		if ((255 == src.at<unsigned char>(seed_y - 1, seed_x + 1)) \
+			&& (0 == img.at<unsigned char>(seed_y - 1, seed_x + 1)))
+		{
+			img.at<unsigned char>(seed_y - 1, seed_x + 1) = 255;
+			length++;
+			length += grow_Wz(img, src, seed_y - 1, seed_x + 1);
+		}
+	}
+
+	if (((seed_y + 1) < img.rows) && (((seed_x - 1) >= 0))) {
+		if ((255 == src.at<unsigned char>(seed_y + 1, seed_x - 1)) \
+			&& (0 == img.at<unsigned char>(seed_y + 1, seed_x - 1)))
+		{
+			img.at<unsigned char>(seed_y + 1, seed_x - 1) = 255;
+			length++;
+			length += grow_Wz(img, src, seed_y + 1, seed_x - 1);
+		}
+	}
+
+	if (((seed_y - 1) >= 0) && (((seed_x - 1) >= 0))) {
+		if ((255 == src.at<unsigned char>(seed_y - 1, seed_x - 1)) \
+			&& (0 == img.at<unsigned char>(seed_y - 1, seed_x - 1)))
+		{
+			img.at<unsigned char>(seed_y - 1, seed_x - 1) = 255;
+			length++;
+			length += grow_Wz(img, src, seed_y - 1, seed_x - 1);
+		}
+	}
+	//******************************
+	return length;
 }
